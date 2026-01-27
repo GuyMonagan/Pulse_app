@@ -6,6 +6,7 @@ class HabitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Habit
         fields = '__all__'
+        read_only_fields = ('user',)
 
     def validate(self, data):
         is_pleasant = data.get('is_pleasant')
@@ -27,7 +28,7 @@ class HabitSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Связанная привычка должна быть приятной.")
 
         # Время выполнения <= 120
-        if duration and duration > 120:
+        if duration is not None and duration > 120:
             raise serializers.ValidationError("Время выполнения не должно превышать 120 секунд.")
 
         # Периодичность не больше 7

@@ -21,6 +21,7 @@ django.setup()
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from users.models import CustomUser
+import httpx
 
 logging.basicConfig(level=logging.INFO)
 
@@ -49,3 +50,8 @@ def run_bot():
 
 if __name__ == "__main__":
     run_bot()
+
+def send_telegram_message(chat_id, text):
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    payload = {"chat_id": chat_id, "text": text}
+    httpx.post(url, data=payload)

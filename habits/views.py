@@ -1,19 +1,22 @@
-from django.shortcuts import render
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, permissions
+from rest_framework.pagination import PageNumberPagination
+
 from .models import Habit
 from .serializers import HabitSerializer
-from rest_framework.pagination import PageNumberPagination
+
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """
-    Только автор может редактировать/удалять.
-    Остальные могут только GET (если публично).
+    Редактировать и удалять может только владелец.
+    Читать можно всем (если привычка публичная).
     """
 
     def has_object_permission(self, request, view, obj):
-        # Разрешаем GET/HEAD/OPTIONS всем
+        # GET / HEAD / OPTIONS — разрешены всем
         if request.method in permissions.SAFE_METHODS:
             return True
+
+        # PUT / PATCH / DELETE — только владелец
         return obj.user == request.user
 
 
@@ -29,10 +32,14 @@ class HabitViewSet(viewsets.ModelViewSet):
     pagination_class = HabitPagination
 
     def get_queryset(self):
+        """
+        - /api/habits/               -> привычки текущего пользователя
+        - /api/habits/?public=true   -> публичные привычки всех пользователей
+        """
         if self.request.query_params.get('public') == 'true':
             return Habit.objects.filter(is_public=True)
+
         return Habit.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-

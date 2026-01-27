@@ -9,6 +9,10 @@ class Habit(models.Model):
     place = models.CharField(max_length=255)
     time = models.TimeField()
     action = models.CharField(max_length=255)
+    is_reminder_enabled = models.BooleanField(
+        default=False,
+        help_text="Включить напоминание через Telegram"
+    )
 
     is_pleasant = models.BooleanField(default=False)
     related_habit = models.ForeignKey(
@@ -23,6 +27,7 @@ class Habit(models.Model):
     reward = models.CharField(max_length=255, blank=True, null=True)
     duration = models.PositiveIntegerField(help_text='время в секундах')
     is_public = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def clean(self):
         # Нельзя одновременно указывать и награду, и связанную привычку

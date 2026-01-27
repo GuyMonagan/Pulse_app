@@ -1,0 +1,19 @@
+[
+  {
+    "model": "habits.habit",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "place": "дом",
+      "time": "15:00:00",
+      "action": "выпить витамины",
+      "is_reminder_enabled": true,
+      "is_pleasant": false,
+      "periodicity": 1,
+      "reward": null,
+      "related_habit": null,
+      "duration": 60,
+      "is_public": true
+    }
+  }
+]
