@@ -1,11 +1,21 @@
 from pathlib import Path
 from decouple import config, Csv
 
+AUTH_USER_MODEL = 'users.CustomUser'
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -20,6 +30,7 @@ INSTALLED_APPS = [
 
     'habits',
     'telegram_bot',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -87,3 +98,13 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+from decouple import config
+
+CELERY_BROKER_URL = f"redis://{config('REDIS_HOST')}:{config('REDIS_PORT', cast=int)}"
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Europe/Moscow'
