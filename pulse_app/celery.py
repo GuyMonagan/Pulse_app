@@ -4,6 +4,9 @@ from decouple import config
 from celery.schedules import crontab
 import logging
 
+logger = logging.getLogger(__name__)
+
+
 # Указываем Django, какие настройки использовать
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', config('DJANGO_SETTINGS_MODULE'))
 
@@ -15,6 +18,7 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 
 # Автоматически находит таски во всех установленных приложениях
 app.autodiscover_tasks()
+
 
 @app.task(bind=True)
 def debug_task(self):

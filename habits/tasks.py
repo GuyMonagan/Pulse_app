@@ -1,38 +1,46 @@
 from celery import shared_task
-from datetime import datetime
 from django.utils.timezone import now
-from .models import Habit
+from habits.models import Habit
+from habits.services import calculate_next_reminder
 from telegram_bot.bot import send_telegram_message
 import logging
 
 logger = logging.getLogger(__name__)
 
+
 @shared_task
 def check_and_send_reminders():
-    now_time = now().time()
-    today = now().date()
+    """
+    Проверяет привычки с активными напоминаниями и отправляет уведомления.
+
+    Алгоритм:
+    - находит привычки, для которых пришло время напоминания
+    - отправляет сообщение в Telegram
+    - рассчитывает и сохраняет следующее напоминание
+    """
     sent = 0
 
-    for habit in Habit.objects.filter(is_reminder_enabled=True):
-        if not habit.created_at:
+    habits = Habit.objects.filter(
+        is_reminder_enabled=True,
+        next_reminder__lte=now()
+    )
+
+    for habit in habits:
+        user = habit.user
+
+        if not user.telegram_chat_id:
             continue
 
-        # Проверка дня по периодичности
-        days_since_start = (today - habit.created_at.date()).days
-        if days_since_start % habit.periodicity != 0:
-            continue
+        send_telegram_message(
+            user.telegram_chat_id,
+            f"🔔 Пора: {habit.action} в {habit.place}!"
+        )
 
-        # Проверка времени
-        if now_time.hour != habit.time.hour or now_time.minute != habit.time.minute:
-            continue
+        # планируем следующее
+        habit.next_reminder = calculate_next_reminder(habit)
+        habit.save(update_fields=['next_reminder'])
 
-        # Проверка наличия чата
-        if not habit.user.telegram_chat_id:
-            continue
-
-        message = f"🔔 Пора: {habit.action} в {habit.place}!"
-        send_telegram_message(habit.user.telegram_chat_id, message)
         sent += 1
-        logger.info(f"Напоминание отправлено пользователю {habit.user.username}")
+        logger.info(f"Напоминание отправлено: {habit.id}")
 
-    return f"✅ Отправлено напоминаний: {sent} | {now()}"
+    return f"Отправлено напоминаний: {sent}"

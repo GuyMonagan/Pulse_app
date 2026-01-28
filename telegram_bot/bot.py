@@ -4,6 +4,15 @@ import sys
 import django
 from decouple import config
 
+"""
+Telegram-бот для привязки Telegram-аккаунта к пользователю приложения.
+
+Используется для:
+- получения telegram_chat_id пользователя
+- сохранения chat_id в модели CustomUser
+- отправки уведомлений из backend-приложения
+"""
+
 # 1. Добавляем КОРЕНЬ ПРОЕКТА (там где manage.py)
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(BASE_DIR)
@@ -29,7 +38,14 @@ TOKEN = config('TELEGRAM_TOKEN')
 
 from asgiref.sync import sync_to_async
 
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Обрабатывает команду /start в Telegram.
+
+    Привязывает Telegram chat_id к пользователю системы
+    по username Telegram-аккаунта.
+    """
     user = update.effective_user
     telegram_id = user.id
 
@@ -43,6 +59,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def run_bot():
+    """
+    Запускает Telegram-бота в режиме polling.
+    """
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.run_polling()
@@ -51,7 +70,13 @@ def run_bot():
 if __name__ == "__main__":
     run_bot()
 
+
 def send_telegram_message(chat_id, text):
+    """
+    Отправляет сообщение пользователю в Telegram.
+
+    Используется backend-частью приложения для рассылки напоминаний.
+    """
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
     payload = {"chat_id": chat_id, "text": text}
     httpx.post(url, data=payload)

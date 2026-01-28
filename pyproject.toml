@@ -17,7 +17,10 @@ dependencies = [
     "redis (>=7.1.0,<8.0.0)",
     "drf-yasg (>=1.21.14,<2.0.0)",
     "python-telegram-bot (>=22.6,<23.0)",
-    "djangorestframework-simplejwt (>=5.5.1,<6.0.0)"
+    "djangorestframework-simplejwt (>=5.5.1,<6.0.0)",
+    "pytz (>=2025.2,<2026.0)",
+    "coverage (>=7.13.2,<8.0.0)",
+    "flake8 (>=7.3.0,<8.0.0)"
 ]
 
 
