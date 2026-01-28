@@ -4,7 +4,14 @@ from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
+
 class Habit(models.Model):
+    """
+    Модель привычки пользователя.
+
+    Описывает действие, которое пользователь должен выполнять регулярно,
+    с возможностью напоминаний, награды или связанной приятной привычки.
+    """
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='habits')
     place = models.CharField(max_length=255)
     time = models.TimeField()
@@ -12,6 +19,11 @@ class Habit(models.Model):
     is_reminder_enabled = models.BooleanField(
         default=False,
         help_text="Включить напоминание через Telegram"
+    )
+    next_reminder = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Следующее напоминание (UTC)"
     )
 
     is_pleasant = models.BooleanField(default=False)
@@ -30,6 +42,15 @@ class Habit(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def clean(self):
+        """
+        Валидирует бизнес-правила привычки.
+
+        Ограничения:
+        - нельзя одновременно указывать награду и связанную привычку
+        - приятная привычка не может иметь награду или связанную привычку
+        - длительность выполнения не более 120 секунд
+        - периодичность не реже одного раза в 7 дней
+        """
         # Нельзя одновременно указывать и награду, и связанную привычку
         if self.reward and self.related_habit:
             raise ValidationError("Нельзя одновременно указывать награду и связанную привычку.")
@@ -47,4 +68,7 @@ class Habit(models.Model):
             raise ValidationError("Нельзя выполнять привычку реже, чем 1 раз в 7 дней.")
 
     def __str__(self):
+        """
+        Читаемое представление привычки.
+        """
         return f"{self.action} в {self.time} @ {self.place}"
