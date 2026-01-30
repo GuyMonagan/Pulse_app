@@ -1,5 +1,5 @@
 from pathlib import Path
-from decouple import config, Csv
+from decouple import config
 
 
 AUTH_USER_MODEL = 'users.CustomUser'
@@ -7,6 +7,8 @@ AUTH_USER_MODEL = 'users.CustomUser'
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = config('SECRET_KEY')
+
+TOKEN = config('TELEGRAM_TOKEN')
 
 
 REST_FRAMEWORK = {

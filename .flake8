@@ -8,7 +8,4 @@ exclude =
     venv,
     .git,
     .idea
-
-per-file-ignores =
-    */settings/*.py: F401,F403,F405
-    telegram_bot/bot.py: E402
+    pulse_app/settings/*

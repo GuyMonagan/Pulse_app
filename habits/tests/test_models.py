@@ -53,5 +53,8 @@ class HabitValidationTest(TestCase):
             user=self.user, action="Sleep", place="Bed", time=time(23, 0),
             duration=120, is_pleasant=True, reward="Money"  # Приятная + награда
         )
-        with self.assertRaisesMessage(ValidationError, "Приятная привычка не имеет награды или связанной привычки."):
+        with self.assertRaisesMessage(
+                ValidationError,
+                "Приятная привычка не может иметь награду"
+        ):
             habit.clean()

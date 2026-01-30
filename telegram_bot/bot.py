@@ -1,67 +1,63 @@
 import logging
 import os
 import sys
+
 import django
+import httpx
+from asgiref.sync import sync_to_async
 from decouple import config
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-"""
-Telegram-бот для привязки Telegram-аккаунта к пользователю приложения.
-
-Используется для:
-- получения telegram_chat_id пользователя
-- сохранения chat_id в модели CustomUser
-- отправки уведомлений из backend-приложения
-"""
-
-# 1. Добавляем КОРЕНЬ ПРОЕКТА (там где manage.py)
+# 1. Сначала настраиваем пути и окружение
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(BASE_DIR)
 
-# 2. Указываем Django settings
 os.environ.setdefault(
     'DJANGO_SETTINGS_MODULE',
     config('DJANGO_SETTINGS_MODULE')
 )
 
-# 3. Инициализируем Django ОДИН РАЗ
+# 2. Инициализируем Django
 django.setup()
 
-# 4. ТОЛЬКО ПОСЛЕ ЭТОГО — любые Django-импорты
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-from users.models import CustomUser
-import httpx
+# 3. Импорты моделей ТОЛЬКО после django.setup()
+# Чтобы Flake8 не ругался на E402 (импорт не в начале файла),
+# мы используем локальный импорт внутри функций.
+# Это официально разрешенный костыль для скриптов инициализации.
 
 logging.basicConfig(level=logging.INFO)
-
 TOKEN = config('TELEGRAM_TOKEN')
-
-from asgiref.sync import sync_to_async
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    Обрабатывает команду /start в Telegram.
+    """Обрабатывает команду /start в Telegram."""
+    # Локальный импорт модели внутри функции
+    from users.models import CustomUser
 
-    Привязывает Telegram chat_id к пользователю системы
-    по username Telegram-аккаунта.
-    """
     user = update.effective_user
     telegram_id = user.id
 
     try:
-        custom_user = await sync_to_async(CustomUser.objects.get)(username=str(user.username))
+        custom_user = await sync_to_async(CustomUser.objects.get)(
+            username=str(user.username)
+        )
         custom_user.telegram_chat_id = str(telegram_id)
         await sync_to_async(custom_user.save)()
         await update.message.reply_text("✅ Chat ID привязан к вашему аккаунту!")
     except CustomUser.DoesNotExist:
-        await update.message.reply_text("❌ Пользователь с таким username не найден в системе.")
+        await update.message.reply_text("❌ Пользователь не найден в системе.")
+
+
+def send_telegram_message(chat_id, text):
+    """Отправляет сообщение пользователю в Telegram."""
+    url = f"https://api.telegram.org{TOKEN}/sendMessage"
+    payload = {"chat_id": chat_id, "text": text}
+    httpx.post(url, data=payload)
 
 
 def run_bot():
-    """
-    Запускает Telegram-бота в режиме polling.
-    """
+    """Запускает Telegram-бота."""
     app = ApplicationBuilder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.run_polling()
@@ -69,14 +65,3 @@ def run_bot():
 
 if __name__ == "__main__":
     run_bot()
-
-
-def send_telegram_message(chat_id, text):
-    """
-    Отправляет сообщение пользователю в Telegram.
-
-    Используется backend-частью приложения для рассылки напоминаний.
-    """
-    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-    payload = {"chat_id": chat_id, "text": text}
-    httpx.post(url, data=payload)

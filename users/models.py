@@ -7,19 +7,31 @@ class CustomUser(AbstractUser):
     """
     Пользователь приложения.
 
-    Расширяет стандартного пользователя Django
-    поддержкой Telegram и часового пояса.
+    Аутентификация по email.
+    Поддержка Telegram и часового пояса.
     """
-    telegram_chat_id = models.CharField(max_length=255, blank=True, null=True)
+
+    username = None  # отключаем username
+
+    email = models.EmailField(
+        unique=True,
+        verbose_name="Email"
+    )
+
+    telegram_chat_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
 
     timezone = models.CharField(
         max_length=50,
         choices=[(tz, tz) for tz in pytz.common_timezones],
-        default='Europe/Moscow'
+        default="Europe/Moscow"
     )
 
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
+
     def __str__(self):
-        """
-        Возвращает имя пользователя.
-        """
-        return self.username
+        return self.email

@@ -1,24 +1,71 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+
+from habits.models import Habit
 from .models import CustomUser
-from habits.models import Habit  # импортируем модель привычек
 
 
-# Это позволит редактировать привычки прямо внутри юзера
 class HabitInline(admin.TabularInline):
     model = Habit
-    extra = 0  # чтобы не плодились пустые строки
+    extra = 0
 
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-    inlines = [HabitInline]  # Добавляем список привычек вниз страницы юзера
 
-    # Поля, которые будут видны в списке всех юзеров
-    list_display = ['username', 'email', 'timezone', 'telegram_chat_id', 'is_staff']
+    inlines = [HabitInline]
 
-    # Поля, которые можно редактировать внутри формы
-    fieldsets = UserAdmin.fieldsets + (
-        ('Дополнительно', {'fields': ('timezone', 'telegram_chat_id')}),
+    # Список пользователей
+    list_display = (
+        "email",
+        "timezone",
+        "telegram_chat_id",
+        "is_staff",
+        "is_active",
+    )
+
+    ordering = ("email",)
+    search_fields = ("email",)
+
+    # Поля формы редактирования пользователя
+    fieldsets = (
+        (None, {"fields": ("email", "password")}),
+        (
+            "Права доступа",
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                )
+            },
+        ),
+        (
+            "Дополнительно",
+            {"fields": ("timezone", "telegram_chat_id")},
+        ),
+        (
+            "Важные даты",
+            {"fields": ("last_login", "date_joined")},
+        ),
+    )
+
+    # Поля при создании пользователя в админке
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": (
+                    "email",
+                    "password1",
+                    "password2",
+                    "is_staff",
+                    "is_active",
+                ),
+            },
+        ),
     )
