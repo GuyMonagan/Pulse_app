@@ -1,4 +1,8 @@
-from .base import *
+from . import base  # noqa: F401
+from decouple import config, Csv  # noqa: F401
+for setting in dir(base):
+    if setting.isupper():
+        globals()[setting] = getattr(base, setting)
 
 
 DEBUG = config('DEBUG', default=False, cast=bool)

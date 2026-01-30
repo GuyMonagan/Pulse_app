@@ -14,7 +14,7 @@ class HabitAPITest(APITestCase):
     """
     def setUp(self):
         """Создаёт пользователя и URL для тестов привычек."""
-        self.user = CustomUser.objects.create_user(username='api_user', password='password123')
+        self.user = CustomUser.objects.create_user(email='api_user@test.com', password='password123')
         # Получаем URL
         self.login_url = reverse('token_obtain_pair')
         self.habit_list_url = reverse('habit-list')
@@ -57,7 +57,7 @@ class HabitAPITest(APITestCase):
 
     def test_public_habit_visibility(self):
         """Чужую ПУБЛИЧНУЮ привычку можно видеть, но нельзя менять"""
-        other_user = CustomUser.objects.create_user(username='guest', password='123')
+        other_user = CustomUser.objects.create_user(email='guest@test.com', password='123')
         public_habit = Habit.objects.create(
             user=self.user, action="Public Action",
             is_public=True, time="12:00:00", duration=60

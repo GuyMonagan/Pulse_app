@@ -1,24 +1,56 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from habits.models import Habit
 from .models import CustomUser
-from habits.models import Habit  # импортируем модель привычек
 
 
-# Это позволит редактировать привычки прямо внутри юзера
 class HabitInline(admin.TabularInline):
     model = Habit
-    extra = 0  # чтобы не плодились пустые строки
+    extra = 0
 
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-    inlines = [HabitInline]  # Добавляем список привычек вниз страницы юзера
+    inlines = [HabitInline]
 
-    # Поля, которые будут видны в списке всех юзеров
-    list_display = ['username', 'email', 'timezone', 'telegram_chat_id', 'is_staff']
+    list_display = (
+        "email",
+        "telegram_username",
+        "timezone",
+        "is_staff",
+        "is_active",
+    )
+    ordering = ("email",)
+    search_fields = ("email", "telegram_username")
 
-    # Поля, которые можно редактировать внутри формы
-    fieldsets = UserAdmin.fieldsets + (
-        ('Дополнительно', {'fields': ('timezone', 'telegram_chat_id')}),
+    fieldsets = (
+        (None, {"fields": ("email", "password")}),
+        (
+            "Персональная информация",
+            {"fields": ("telegram_username", "telegram_chat_id", "timezone")},
+        ),
+        (
+            "Права доступа",
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                )
+            },
+        ),
+        ("Важные даты", {"fields": ("last_login", "date_joined")}),
+    )
+
+    add_fieldsets = (
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": ("email", "password", "is_staff", "is_active"),
+            },
+        ),
     )

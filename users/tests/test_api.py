@@ -12,7 +12,7 @@ class UserAPITest(APITestCase):
     """
     def setUp(self):
         """Создаёт тестового пользователя и основные URL."""
-        self.user = CustomUser.objects.create_user(username='api_user', password='password123')
+        self.user = CustomUser.objects.create_user(email='api_user@test.com', password='password123')
         self.login_url = reverse('token_obtain_pair')
         self.habit_list_url = reverse('habit-list')
 
