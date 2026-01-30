@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-
 from habits.models import Habit
 from .models import CustomUser
 
@@ -13,24 +12,24 @@ class HabitInline(admin.TabularInline):
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-
     inlines = [HabitInline]
 
-    # Список пользователей
     list_display = (
         "email",
+        "telegram_username",
         "timezone",
-        "telegram_chat_id",
         "is_staff",
         "is_active",
     )
-
     ordering = ("email",)
-    search_fields = ("email",)
+    search_fields = ("email", "telegram_username")
 
-    # Поля формы редактирования пользователя
     fieldsets = (
         (None, {"fields": ("email", "password")}),
+        (
+            "Персональная информация",
+            {"fields": ("telegram_username", "telegram_chat_id", "timezone")},
+        ),
         (
             "Права доступа",
             {
@@ -43,29 +42,15 @@ class CustomUserAdmin(UserAdmin):
                 )
             },
         ),
-        (
-            "Дополнительно",
-            {"fields": ("timezone", "telegram_chat_id")},
-        ),
-        (
-            "Важные даты",
-            {"fields": ("last_login", "date_joined")},
-        ),
+        ("Важные даты", {"fields": ("last_login", "date_joined")}),
     )
 
-    # Поля при создании пользователя в админке
     add_fieldsets = (
         (
             None,
             {
                 "classes": ("wide",),
-                "fields": (
-                    "email",
-                    "password1",
-                    "password2",
-                    "is_staff",
-                    "is_active",
-                ),
+                "fields": ("email", "password", "is_staff", "is_active"),
             },
         ),
     )

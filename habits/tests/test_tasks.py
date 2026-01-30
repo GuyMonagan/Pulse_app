@@ -12,7 +12,7 @@ class CeleryTaskTest(APITestCase):
     """
     def test_reminder_logic(self):
         """Проверяет отправку напоминания и пересчёт следующего времени."""
-        user = CustomUser.objects.create(username='bot_user', telegram_chat_id='12345')
+        user = CustomUser.objects.create(email='bot_user@test.com', telegram_chat_id='12345')
         habit = Habit.objects.create(
             user=user, action="Test Task", place="Lab",
             time=timezone.now().time(),

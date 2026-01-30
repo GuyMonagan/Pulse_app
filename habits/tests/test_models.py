@@ -13,7 +13,7 @@ class HabitValidationTest(TestCase):
     """
     def setUp(self):
         """Создаёт пользователя и приятную привычку."""
-        self.user = User.objects.create(username="testuser", timezone="Europe/Moscow")
+        self.user = User.objects.create(email="testuser@test.com", timezone="Europe/Moscow")
         self.pleasant_habit = Habit.objects.create(
             user=self.user, action="Read book", place="Sofa", time=time(9, 0),
             duration=60, is_pleasant=True

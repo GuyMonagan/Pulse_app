@@ -16,7 +16,7 @@ class HabitTimeZoneTest(TestCase):
     def setUp(self):
         """Создаёт пользователя с часовым поясом Asia/Tashkent."""
         self.user = User.objects.create(
-            username="testuser",
+            email="test@example.com",
             timezone="Asia/Tashkent"
         )
 
